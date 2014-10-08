@@ -23,8 +23,11 @@ end
 
 puts ips
 
-open('http://jsonip.com/') do |f|
-	ip = JSON::parse(f.string())["ip"].red
-	puts "Public IP Address: #{ip}"
+begin
+	open('http://jsonip.com/') do |f|
+		ip = JSON::parse(f.string())["ip"].red
+		puts "Public IP Address: #{ip}"
+	end
+rescue SocketError => e
+	puts "Your computer not online."
 end
-
