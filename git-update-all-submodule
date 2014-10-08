@@ -1,0 +1,104 @@
+#!/usr/bin/ruby
+
+require 'colorize'
+require 'awesome_print'
+
+/
+ git submodule foreach --recursive git pull
+/
+
+def command_in_dir(dir, command)
+	`cd #{dir};#{command}`
+end
+
+puts "Root Dir is '#{Dir.pwd}'"
+projects = []
+submodules = []
+
+puts "Now find all submodules..."
+
+Dir.foreach(Dir.pwd) do |dir|
+	next if dir.eql? "." or dir.eql? ".."
+	next if !File.directory?(dir.to_s)
+
+	Dir.chdir(dir) do 
+		project = Dir.pwd
+		g = `git status`
+		
+		if g.index("On branch").eql? 0
+
+			`git submodule`.lines('\n').each do |single|
+				subname = single.lines(' ')[-2]
+				#puts "in submodule #{subname}"
+				projects.push project
+				submodules.push "#{project}/#{subname}"
+			end
+
+		end
+	end
+end
+
+
+if submodules.length.eql? 0
+	puts "Not find any submodules."
+	exit
+end
+
+print "Find #{submodules.length} submodules, pull all? ([y]/n):"
+if gets.chomp.eql? "n"
+	exit
+end
+
+print "Now start check all submodules"
+
+
+updated_project = []
+updated = []
+submodules.each_with_index do |single, index|
+		#command_in_dir single, 'git fetch'
+
+		if true#command_in_dir(single, 'git status').include? "Your branch is behind"
+			command_in_dir single, 'git pull'
+			print '.'.green
+			updated_project.push projects[index]
+			updated.push single
+		else
+			print '.'.blue
+		end
+end
+puts "OK";
+
+puts "Finish pull #{updated.length} submodules.";
+
+exit if updated.length == 0
+
+print "Need help you push submodules update commit? ([y]/n):"
+if gets.chomp.eql? "n"
+	exit
+end
+
+print "What commit you waht say? (default 'update [submodule_name] submodule'): "
+
+commit_string = gets.chomp
+if commit_string.eql? ""
+	commit_string = 'update %{name} submodule'
+end
+
+print "Now start commit"
+
+updated.each_with_index do |single, index|
+	dir = updated_project[index];
+	submodule_name = single.lines('/').last.strip
+	
+	command_in_dir dir, 'git reset HEAD .'
+	command_in_dir dir, "git add #{submodule_name}"
+	#command_in_dir dir, "git commit -m " + (commit_string % { :name => submodule_name})
+	#command_in_dir dir, "git push"
+	
+	print '.'.green
+end
+
+puts "OK";
+
+
+
