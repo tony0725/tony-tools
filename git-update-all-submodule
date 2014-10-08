@@ -1,7 +1,9 @@
 #!/usr/bin/ruby
 
+
 require 'colorize'
 require 'awesome_print'
+
 
 /
  git submodule foreach --recursive git pull
@@ -55,9 +57,9 @@ print "Now start check all submodules"
 updated_project = []
 updated = []
 submodules.each_with_index do |single, index|
-		#command_in_dir single, 'git fetch'
+		command_in_dir single, 'git fetch'
 
-		if true#command_in_dir(single, 'git status').include? "Your branch is behind"
+		if command_in_dir(single, 'git status').include? "Your branch is behind"
 			command_in_dir single, 'git pull'
 			print '.'.green
 			updated_project.push projects[index]
@@ -77,7 +79,7 @@ if gets.chomp.eql? "n"
 	exit
 end
 
-print "What commit you waht say? (default 'update [submodule_name] submodule'): "
+print "What commit you waht say? (default 'update %{name} submodule'): "
 
 commit_string = gets.chomp
 if commit_string.eql? ""
@@ -90,10 +92,17 @@ updated.each_with_index do |single, index|
 	dir = updated_project[index];
 	submodule_name = single.lines('/').last.strip
 	
-	command_in_dir dir, 'git reset HEAD .'
+	status = command_in_dir dir, 'git branch'
+	branch = status.lines("\n").find { |e| e.index('*') == 0  }
+	branch = branch.gsub "* ", ""
+	branch = branch.strip
+	remote = command_in_dir dir, 'git remote'
+	remote = remote.strip
+
+	command_in_dir dir, "git reset HEAD ."
 	command_in_dir dir, "git add #{submodule_name}"
-	#command_in_dir dir, "git commit -m " + (commit_string % { :name => submodule_name})
-	#command_in_dir dir, "git push"
+	command_in_dir dir, "git commit -m \"" + (commit_string % { :name => submodule_name}) + "\""
+	command_in_dir dir, "git push #{remote} #{branch}"
 	
 	print '.'.green
 end
