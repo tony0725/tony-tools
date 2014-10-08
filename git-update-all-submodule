@@ -5,10 +5,6 @@ require 'colorize'
 require 'awesome_print'
 
 
-/
- git submodule foreach --recursive git pull
-/
-
 def command_in_dir(dir, command)
 	`cd #{dir};#{command}`
 end
@@ -31,7 +27,6 @@ Dir.foreach(Dir.pwd) do |dir|
 
 			`git submodule`.lines('\n').each do |single|
 				subname = single.lines(' ')[-2]
-				#puts "in submodule #{subname}"
 				projects.push project
 				submodules.push "#{project}/#{subname}"
 			end
