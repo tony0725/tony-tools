@@ -6,7 +6,8 @@ require 'awesome_print'
 
 
 def command_in_dir(dir, command)
-	`cd #{dir};#{command}`
+	cmds = "cd #{dir};#{command}"
+	%x(#{cmds})
 end
 
 puts "Root Dir is '#{Dir.pwd}'"
