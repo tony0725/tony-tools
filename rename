@@ -1,0 +1,19 @@
+#!/usr/bin/ruby
+
+if (ARGV.length < 3)
+	puts "rename <find> <replace> <files>"
+	exit
+end
+
+find = ARGV.shift
+replace = ARGV.shift
+count = ARGV.length
+
+ARGV.each { |file|
+	newFile = file.gsub(find, replace)
+	newFile = newFile.gsub(" ", "\\ ")
+	file = file.gsub(" ", "\\ ")
+	`mv #{file} #{newFile}`
+}
+
+puts "done. #{count} file(s) renamed."
